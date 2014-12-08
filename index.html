@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <title>Icon Size Helper</title>
+<style type="text/css">
+
+  body,
+  .tiles,
+  .tile {
+    margin: 0;
+    padding: 0;
+  }
+
+  body { text-rendering: optimizeLegibility; }
+
+  .wrapper {
+    margin: 5% auto;
+    width: 800px;
+    font-family: "Helvetica Neue", "Helvetica", Arial, sans-serif;
+    font-weight: 300;
+  }
+
+  .clfx { zoom: 1; }
+  .clfx:before,
+  .clfx:after { display: table; line-height: 0; content: " "; }
+  .clfx:after { clear: both; }
+
+  .tiles {
+    margin: 0;
+    padding: 0;
+  }
+
+  .tile {
+    display: block;
+    margin: 0;
+    padding: 0;
+    width: 200px;
+    float: left;
+  }
+
+  .resize-me {
+    display: inline-block;
+    line-height: 40px;
+    vertical-align: middle;
+  }
+
+  .icon {
+    display: inline-block;
+    vertical-align: middle;
+    width:  17px;
+    height: 17px;
+    margin-right: 4px;
+    box-shadow: inset 0px 0px 0px 1px black;
+    border-radius: 100%;
+    content: "";
+  }
+
+  .slider-label,
+  .slider-value {
+    display: inline-block;
+  }
+
+  .slider {
+    position: relative;
+    top: .2em;
+  }
+
+</style>
+</head>
+<body>
+  <div class="wrapper">
+    <div class="toolbar">
+      <div class="toolbar-slider">
+        <p class="slider-label">Icon: </p><input id="size-slider" class="slider" type="range"><p class="slider-value"></p>
+      </div>
+    </div>
+    <ul class="tiles clfx">
+      <li class="tile"><span class="icon"></span><p class="resize-me">Some Label</p></li>
+      <li class="tile"><span class="icon"></span><p class="resize-me">Some Label</p></li>
+      <li class="tile"><span class="icon"></span><p class="resize-me">Some Label</p></li>
+      <li class="tile"><span class="icon"></span><p class="resize-me">Some Label</p></li>
+      <li class="tile"><span class="icon"></span><p class="resize-me">Some Label</p></li>
+      <li class="tile"><span class="icon"></span><p class="resize-me">Some Label</p></li>
+      <li class="tile"><span class="icon"></span><p class="resize-me">Some Label</p></li>
+      <li class="tile"><span class="icon"></span><p class="resize-me">Some Label</p></li>
+      <li class="tile"><span class="icon"></span><p class="resize-me">Some Label</p></li>
+      <li class="tile"><span class="icon"></span><p class="resize-me">Some Label</p></li>
+      <li class="tile"><span class="icon"></span><p class="resize-me">Some Label</p></li>
+      <li class="tile"><span class="icon"></span><p class="resize-me">Some Label</p></li>
+    </ul>
+  </div>
+
+
+<script type="text/javascript">
+"use strict"
+
+
+// Config
+
+var pToResizeClassName  = '.resize-me',
+    pFontSizeStart      = 13,
+
+    sliderId            = '#size-slider',
+    sliderConfig = {
+      minIconSize       : 13,
+      maxIconSize       : 24,
+      defIconSize       : 17,
+      labelClassName    : '.slider-value'
+    },
+
+    iconToResizeClassName = '.icon';
+
+
+// Helpers
+
+function px(num) { return num + 'px' }
+
+
+// Icons Module
+
+var icons = (function() {
+  var iconsDOMElems;
+
+  var resizeIcons = function(e) {
+    [].forEach.call(iconsDOMElems, function(icon) {
+      icon.style.width  = px(e.detail);
+      icon.style.height = px(e.detail);
+    });
+  }
+
+  var init = function(iconToResizeClassName) {
+    iconsDOMElems = document.querySelectorAll(iconToResizeClassName);
+
+    document.addEventListener('sliderDidChange', resizeIcons, false);
+  }
+
+  return { init : init }
+})();
+
+
+// Slider Module
+
+var slider = (function() {
+  var sliderDOMElem, sliderLabelDOMElem;
+
+  var triggerEvent = function(currentValue) {
+    var eSliderDidChange = new CustomEvent('sliderDidChange', {
+      'detail': currentValue
+    });
+    document.dispatchEvent(eSliderDidChange);
+  }
+
+  var updateLabel = function(newValue) {
+    sliderLabelDOMElem.innerHTML = px(newValue);
+  }
+
+  var init = function(sliderId, sliderConfig) {
+    sliderDOMElem = document.querySelector(sliderId);
+
+    sliderDOMElem.min   = sliderConfig.minIconSize;
+    sliderDOMElem.max   = sliderConfig.maxIconSize;
+    sliderDOMElem.value = sliderConfig.defIconSize;
+
+    sliderDOMElem.addEventListener('change', function() {
+      triggerEvent(this.value);
+      updateLabel(this.value);
+    }, false);
+
+    sliderLabelDOMElem = document.querySelector(sliderConfig.labelClassName);
+    updateLabel(sliderConfig.defIconSize);
+  }
+
+  return { init : init }
+})();
+
+
+// Paragraphs Module
+
+var ps = (function() {
+  var psDOMElems;
+
+  var init = function(pToResizeClassName) {
+    psDOMElems = document.querySelectorAll(pToResizeClassName);
+
+    for (var i = 0, l = psDOMElems.length; i < l; i++) {
+      var currentFontSize = pFontSizeStart + i;
+      psDOMElems[i].style.fontSize = px(currentFontSize);
+      psDOMElems[i].innerHTML += ' ' + currentFontSize;
+    };
+  }
+
+  return { init : init }
+})();
+
+
+// App
+
+var app = (function() {
+
+  var init = function() {
+    ps.init(pToResizeClassName);
+    slider.init(sliderId, sliderConfig);
+    icons.init(iconToResizeClassName);
+  }
+
+  return { init : init }
+})();
+
+
+// Start Point
+
+window.onload = function() { app.init(); }
+
+</script>
+
+</body>
+</html>
